@@ -4,8 +4,10 @@
 #@parameterized.expand:- used to test the input and output combinations
 
 import unittest
+from unittest.mock import patch, Mock
 from parameterized import parameterized
 from utils import access_nested_map
+from utils import get_json
 
 class TestAccessNestedMap(unittest.TestCase):
     @parameterized.expand([
@@ -27,6 +29,20 @@ class TestAccessNestedMap(unittest.TestCase):
         missingKey = context.exception.args[0]
 
         self.assertEqual(str(context.exception), repr(missingKey))
+class TestGetJson(unittest.TestCase):
+    @parameterized.expand([
+        ("http://example.com", {"payload": True}),
+        ("http://holberton.io", {"payload": False}),
+        ])
+    def test_get_json(self, test_url, test_payload):
+        with patch("utils.requests.get") as mock_get:
+            mockResponse = Mock()
+            mockResponse.json.return_value = test_payload
+            mock_get.return_value = mockResponse
+
+            result = get_json(test_url)
+            mock_get.assert_called_once_with(test_url)
+            self.assertEqual(result, test_payload)
 
 if __name__ == "__main__":
     unittest.main()
